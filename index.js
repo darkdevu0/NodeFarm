@@ -26,18 +26,22 @@ const replaceTemplate = (single, el) => {
 };
 
 const server = http.createServer((req, res) => {
-    const path = req.url;
+    const path = url.parse(req.url).pathname;
 
     if (path === "/overview" || path === "/") {
         res.writeHead(404, { "Content-type": "text/html" });
 
-        const cards = dataObj.map((el) => replaceTemplate(single, el)).reduce(((pv, cv) => pv + ' ' + cv), '');
+        const cards = dataObj.map((el) => replaceTemplate(single, el)).join(' ');
 
         const out = overview.replace(/{%PRODUCT_CARDS%}/g, cards);
 
         res.end(out);
     } else if (path === "/product") {
-        res.end("This is Product");
+        const id = +url.parse(req.url, true).query.id;
+
+        const out = replaceTemplate(product, dataObj.find(el => el.id === id));
+
+        res.end(out);
     } else if (path === "/api") {
         res.writeHead(200, { "content-type": "application/json" });
         res.end(data);
